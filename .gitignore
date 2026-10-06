@@ -1,0 +1,30 @@
+# ── Gradle ──
+.gradle/
+build/
+
+# ── Android Studio / IntelliJ ──
+.idea/
+*.iml
+.kotlin/
+
+# ── 本机配置 ──
+# 里面有本机 Android SDK 的绝对路径，绝不能提交
+local.properties
+
+# ── 构建产物 ──
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.jar.tmp
+app/release/
+captures/
+.cxx/
+*.hprof
+
+# ── 日志与临时文件 ──
+build_log.txt
+*.log
+.DS_Store
+Thumbs.db
