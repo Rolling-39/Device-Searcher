@@ -90,14 +90,36 @@ d = 10 ^ ((RSSI_1m - RSSI) / (10 * n))
 | 仓库 | 腾讯云镜像优先，回退 google / mavenCentral |
 | JVM 目标 | 1.8 |
 
-构建需要 JDK 17（用 Android Studio 自带的 JBR 即可）。根目录的 `build_apk.ps1` 已经把 `JAVA_HOME` 指过去并把输出重定向到 `build_log.txt`：
+构建需要 JDK 17（用 Android Studio 自带的 JBR 即可）。仓库里两个入口脚本都能用：
 
 ```powershell
-$env:JAVA_HOME = 'E:\Android Studio\jbr'
-.\gradlew.bat assembleDebug
+.\build_apk.ps1          # Windows；输出同时进控制台与 build_log.txt
+```
+```sh
+./gradlew assembleDebug  # Windows / Linux / macOS 通用
 ```
 
+`build_apk.ps1` 会**优先探测 Android Studio 的 JBR**，找不到才回退到已有的 `JAVA_HOME`。这个优先级是有意为之：机器上若同时装了较新的独立 JDK（例如 JDK 25），先信任 `JAVA_HOME` 会让 Gradle 报一串 `restricted method ... has been called` 警告，而且那并不是 Android 构建想要的 JDK。
+
 两点关于打包的提醒。其一，`app/build.gradle.kts` 的 `release` 块**没有配 `signingConfig`**，所以 `assembleRelease` 产出的是 `app-release-unsigned.apk`，装不上，需要先配签名或用 debug 构建。其二，`local.properties` 里是本机 SDK 绝对路径，**不应该进版本库**（该文件自己也在注释里写明了）。
+
+---
+
+## 启动图标
+
+资源分三层。`minSdk 26` 意味着实际生效的永远是自适应图标那一层，传统图标只是兜底。
+
+| 位置 | 内容 |
+|---|---|
+| `mipmap-anydpi-v26/ic_launcher.xml` / `ic_launcher_round.xml` | 自适应图标：`background` 是纯色 `@color/ic_launcher_background`，`foreground` 是 `@mipmap/ic_launcher_foreground` |
+| `mipmap-{m,h,x,xx,xxx}dpi/ic_launcher.png` / `ic_launcher_round.png` | 传统方形 / 圆形图标，48 / 72 / 96 / 144 / 192 px |
+| `mipmap-{m,h,x,xx,xxx}dpi/ic_launcher_foreground.png` | 自适应前景，108 / 162 / 216 / 324 / 432 px（按 108 dp 画布） |
+
+**背景取白色是刻意的。** logo 本身是「灰色渐变圆盘 + 透明镂空的月牙与四向箭头」，镂空处会透出底层颜色，白底才能还原设计本来的观感（灰盘 + 白色图案）。想换深色只需改 `values/ic_launcher_background.xml` 一个值。
+
+自适应前景里图案的直径取画布的 **66.7%（72/108）**——那是官方保证可见的区域，再大会被圆形遮罩的启动器裁掉。传统图标则取 88%。
+
+这层资源重建过一次：原来五个 `ic_launcher.png` **逐字节相同**（都是 2079×2016 的原始设计稿，各 2.83 MB，合计 14.2 MB），既浪费又与密度目录的语义矛盾，而且没有自适应图标与圆角图标。改对之后 debug APK 从 **21.91 MB 降到 8.70 MB**（-60%）。
 
 ---
 

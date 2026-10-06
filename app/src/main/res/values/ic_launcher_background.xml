@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 启动图标自适应背景：取白色，因为 logo 的月牙与箭头是透明镂空，
+         白底才能还原设计本来的观感（灰盘 + 白色图案）。 -->
+    <color name="ic_launcher_background">#FFFFFF</color>
+</resources>

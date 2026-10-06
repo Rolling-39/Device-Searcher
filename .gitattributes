@@ -1,0 +1,5 @@
+# gradlew 是 POSIX shell 脚本，行尾必须是 LF。若被 core.autocrlf 转成 CRLF，
+# shebang 会变成 "#!/bin/sh\r"，在 Linux/macOS 上直接报 bad interpreter。
+gradlew text eol=lf
+*.sh    text eol=lf
+*.bat   text eol=crlf
